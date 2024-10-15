@@ -1,0 +1,6 @@
+http://localhost:8080/myAccount
+http://localhost:8080/myBalance
+http://localhost:8080/myCards
+http://localhost:8080/contact
+http://localhost:8080/myLoans
+http://localhost:8080/notices
