@@ -17,3 +17,10 @@ FROM `eazy_bank`.`users`;
 SELECT `authorities`.`username`,
     `authorities`.`authority`
 FROM `eazy_bank`.`authorities`;
+
+CREATE TABLE `eazy_bank`.`customer` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `email` VARCHAR(45) NOT NULL,
+  `pwd` VARCHAR(200) NOT NULL,
+  `role` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`id`));
