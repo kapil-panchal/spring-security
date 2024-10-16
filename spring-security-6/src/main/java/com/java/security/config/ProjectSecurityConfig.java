@@ -2,32 +2,40 @@ package com.java.security.config;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
-import javax.sql.DataSource;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.password.CompromisedPasswordChecker;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+
+import com.java.security.exceptions.CustomAccessDeniedHandler;
+import com.java.security.exceptions.CustomBasicAuthenticationEntryPoint;
 
 @Configuration
 @Profile(value = "!prod")
 public class ProjectSecurityConfig {
+	
+	@Autowired
+	private IpAddressFilter ipAddressFilter;
 
 	@Bean
 	SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-		http.csrf(csrfConfig -> csrfConfig.disable());
-		http.authorizeHttpRequests((requests) -> requests
-				.requestMatchers("/myAccount", "/myBalance", "/myCards", "/myLoans").permitAll()
-				.requestMatchers("/contact", "/notices", "/error", "/register").permitAll());
-		http.formLogin(withDefaults());
-		http.httpBasic(withDefaults());
+		http.addFilterBefore(ipAddressFilter, BasicAuthenticationFilter.class)
+			.requiresChannel(rcc -> rcc.anyRequest().requiresInsecure())
+			.csrf(csrfConfig -> csrfConfig.disable())
+			.authorizeHttpRequests((requests) -> requests
+				.requestMatchers("/myAccount", "/myBalance", "/myCards", "/myLoans").authenticated()
+				.requestMatchers("/contact", "/notices", "/error", "/register").permitAll())
+			.formLogin(withDefaults())
+			.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
+//		http.exceptionHandling(ehc -> ehc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
+		http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
 		return http.build();
 	}
 	
