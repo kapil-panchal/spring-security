@@ -14,12 +14,20 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
 
+import com.java.school.handler.CustomAuthenticationFailureHandler;
+import com.java.school.handler.CustomAuthenticationSuccessHandler;
+
+import lombok.RequiredArgsConstructor;
+
 @Configuration
+@RequiredArgsConstructor
 public class ProjectSecurityConfig {
+	
+	private final CustomAuthenticationSuccessHandler authenticationSuccessHandler;
+	private final CustomAuthenticationFailureHandler authenticationFailureHandler;
 
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-
         http.csrf((csrf) -> csrf.disable())
                 .authorizeHttpRequests((requests) -> requests.requestMatchers("/dashboard").authenticated()
                         .requestMatchers("/", "/home", "/holidays/**", "/contact", "/saveMsg",
@@ -28,7 +36,10 @@ public class ProjectSecurityConfig {
                 		.loginPage("/login")
                 		.usernameParameter("userid")
                 		.passwordParameter("securePwd")
-                		.defaultSuccessUrl("/dashboard"))
+                		.defaultSuccessUrl("/dashboard")
+                		.failureUrl("/login?error=true")
+                		.successHandler(authenticationSuccessHandler)
+                		.failureHandler(authenticationFailureHandler))
                 .httpBasic(Customizer.withDefaults());
 
         return http.build();
