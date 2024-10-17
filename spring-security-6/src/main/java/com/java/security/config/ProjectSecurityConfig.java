@@ -26,12 +26,17 @@ public class ProjectSecurityConfig {
 
 	@Bean
 	SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-		http.addFilterBefore(ipAddressFilter, BasicAuthenticationFilter.class)
+		http.sessionManagement(smc -> smc
+				.sessionFixation(sfc -> sfc.changeSessionId())
+				.invalidSessionUrl("/invalidSession")
+				.maximumSessions(3)
+				.maxSessionsPreventsLogin(true))
+			.addFilterBefore(ipAddressFilter, BasicAuthenticationFilter.class)
 			.requiresChannel(rcc -> rcc.anyRequest().requiresInsecure())
 			.csrf(csrfConfig -> csrfConfig.disable())
 			.authorizeHttpRequests((requests) -> requests
 				.requestMatchers("/myAccount", "/myBalance", "/myCards", "/myLoans").authenticated()
-				.requestMatchers("/contact", "/notices", "/error", "/register").permitAll())
+				.requestMatchers("/contact", "/notices", "/error", "/register", "/invalidSession").permitAll())
 			.formLogin(withDefaults())
 			.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
 //		http.exceptionHandling(ehc -> ehc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
