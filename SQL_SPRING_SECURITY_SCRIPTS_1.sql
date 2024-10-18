@@ -33,3 +33,5 @@ SELECT `customer`.`id`,
     `customer`.`pwd`,
     `customer`.`role`
 FROM `eazy_bank`.`customer`;
+
+
