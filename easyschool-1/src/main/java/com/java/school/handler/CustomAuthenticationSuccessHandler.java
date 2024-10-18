@@ -23,7 +23,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 		log.info("Login successful for user: {}", authentication.getName());
 		log.info("Login successful for username: {}", userDetails.getUsername());
 		log.info("Login successful for password: {}", userDetails.getPassword());
-		log.info("Login successful for getAutorities: {}", userDetails.getAuthorities());
+		log.info("Login successful for getAuthorities: {}", userDetails.getAuthorities());
 		log.info("Login successful for isAccountNonExpired: {}", userDetails.isAccountNonExpired());
 		log.info("Login successful for isAccountNonLocked: {}", userDetails.isAccountNonLocked());
 		log.info("Login successful for isCredentialsNonExpired: {}", userDetails.isCredentialsNonExpired());
