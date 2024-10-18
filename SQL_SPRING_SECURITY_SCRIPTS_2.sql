@@ -262,3 +262,21 @@ SELECT `notice_details`.`notice_id`,
     `notice_details`.`update_dt`
 FROM `eazy_bank`.`notice_details`;
 
+CREATE TABLE `authorities` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `customer_id` int NOT NULL,
+  `name` varchar(50) NOT NULL,  
+  PRIMARY KEY (`id`),
+  KEY `customer_id` (`customer_id`),
+  CONSTRAINT `authorities_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `customer` (`customer_id`)
+);
+
+INSERT INTO `authorities` (`customer_id`, `name`) VALUES (1, 'VIEWACCOUNT');
+INSERT INTO `authorities` (`customer_id`, `name`) VALUES (1, 'VIEWCARDS');
+INSERT INTO `authorities` (`customer_id`, `name`) VALUES (1, 'VIEWLOANS');
+INSERT INTO `authorities` (`customer_id`, `name`) VALUES (1, 'VIEWBALANCE');
+
+SELECT `authorities`.`id`,
+    `authorities`.`customer_id`,
+    `authorities`.`name`
+FROM `eazy_bank`.`authorities`;
