@@ -1,6 +1,7 @@
 package com.java.security.config;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -26,8 +27,8 @@ public class EazyBankUserDetailsService implements UserDetailsService{
 		Customer customer = customerRepository.findByEmail(username).orElseThrow(() -> 
 		new UsernameNotFoundException("User details not found for username: " + username));
 		
-		List<GrantedAuthority> authorities = List
-				.of(new SimpleGrantedAuthority(customer.getRole()));
+		List<GrantedAuthority> authorities = customer.getAuthorities().stream().map(authority -> new
+                SimpleGrantedAuthority(authority.getName())).collect(Collectors.toList());
 		
 		return new User(customer.getEmail(), customer.getPwd(), authorities);
 	}
