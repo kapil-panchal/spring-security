@@ -22,7 +22,10 @@ import org.springframework.web.cors.CorsConfigurationSource;
 
 import com.java.security.exceptions.CustomAccessDeniedHandler;
 import com.java.security.exceptions.CustomBasicAuthenticationEntryPoint;
+import com.java.security.filter.AuthoritiesLoggingAfterFilter;
+import com.java.security.filter.AuthoritiesLoggingAtFilter;
 import com.java.security.filter.CsrfCookieFilter;
+import com.java.security.filter.RequestValidationBeforeFilter;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -62,6 +65,9 @@ public class ProjectSecurityProdConfig {
 					.ignoringRequestMatchers("/contact","/register")
 					.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
 			.addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+			.addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
+			.addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
+			.addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class)
 			.authorizeHttpRequests((requests) -> requests
 //				.requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
 //				.requestMatchers("/myBalance").hasAnyAuthority("VIEWBALANCE", "VIEWACCOUNT")
