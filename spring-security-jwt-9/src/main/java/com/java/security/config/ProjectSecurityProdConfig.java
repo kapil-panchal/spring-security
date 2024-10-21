@@ -2,6 +2,7 @@ package com.java.security.config;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.springframework.context.annotation.Bean;
@@ -25,6 +26,8 @@ import com.java.security.exceptions.CustomBasicAuthenticationEntryPoint;
 import com.java.security.filter.AuthoritiesLoggingAfterFilter;
 import com.java.security.filter.AuthoritiesLoggingAtFilter;
 import com.java.security.filter.CsrfCookieFilter;
+import com.java.security.filter.JWTTokenGeneratorFilter;
+import com.java.security.filter.JWTTokenValidatorFilter;
 import com.java.security.filter.RequestValidationBeforeFilter;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,7 +43,7 @@ public class ProjectSecurityProdConfig {
 				CsrfTokenRequestAttributeHandler();
 		
 		http.sessionManagement(sessionConfig -> sessionConfig
-				.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
+				.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.cors(corsConfig -> corsConfig.configurationSource(new CorsConfigurationSource() {
 
 			@Override
@@ -50,6 +53,7 @@ public class ProjectSecurityProdConfig {
                 config.setAllowedMethods(Collections.singletonList("*"));
                 config.setAllowCredentials(true);
                 config.setAllowedHeaders(Collections.singletonList("*"));
+                config.setExposedHeaders(Arrays.asList("Authorization"));
                 config.setMaxAge(3600L);
                 return config;
 			}
@@ -68,6 +72,8 @@ public class ProjectSecurityProdConfig {
 			.addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
 			.addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
 			.addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class)
+			.addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
+			.addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
 			.authorizeHttpRequests((requests) -> requests
 //				.requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
 //				.requestMatchers("/myBalance").hasAnyAuthority("VIEWBALANCE", "VIEWACCOUNT")

@@ -2,9 +2,9 @@ package com.java.security.config;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+import java.util.Arrays;
 import java.util.Collections;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -26,6 +26,8 @@ import com.java.security.exceptions.CustomBasicAuthenticationEntryPoint;
 import com.java.security.filter.AuthoritiesLoggingAfterFilter;
 import com.java.security.filter.AuthoritiesLoggingAtFilter;
 import com.java.security.filter.CsrfCookieFilter;
+import com.java.security.filter.JWTTokenGeneratorFilter;
+import com.java.security.filter.JWTTokenValidatorFilter;
 import com.java.security.filter.RequestValidationBeforeFilter;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,8 +36,8 @@ import jakarta.servlet.http.HttpServletRequest;
 @Profile(value = "!prod")
 public class ProjectSecurityConfig {
 	
-	@Autowired
-	private IpAddressFilter ipAddressFilter;
+//	@Autowired
+//	private IpAddressFilter ipAddressFilter;
 
 	@Bean
 	SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -44,7 +46,7 @@ public class ProjectSecurityConfig {
 				CsrfTokenRequestAttributeHandler();
 		
 		http.sessionManagement(sessionConfig -> sessionConfig
-				.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
+				.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // generates JSESSIONID
 			.cors(corsConfig -> corsConfig.configurationSource(new CorsConfigurationSource() {
 
 			@Override
@@ -54,6 +56,7 @@ public class ProjectSecurityConfig {
                 config.setAllowedMethods(Collections.singletonList("*"));
                 config.setAllowCredentials(true);
                 config.setAllowedHeaders(Collections.singletonList("*"));
+                config.setExposedHeaders(Arrays.asList("Authorization"));
                 config.setMaxAge(3600L);
                 return config;
 			}
@@ -63,7 +66,7 @@ public class ProjectSecurityConfig {
 //				.invalidSessionUrl("/invalidSession")
 //				.maximumSessions(3)
 //				.maxSessionsPreventsLogin(true))
-			.addFilterBefore(ipAddressFilter, BasicAuthenticationFilter.class)
+//			.addFilterBefore(ipAddressFilter, BasicAuthenticationFilter.class)
 			.requiresChannel(rcc -> rcc.anyRequest().requiresInsecure())
 //			.csrf(csrfConfig -> csrfConfig.disable())
 			.csrf(csrfConfig -> csrfConfig
@@ -74,6 +77,8 @@ public class ProjectSecurityConfig {
 			.addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
 			.addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
 			.addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class)
+			.addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
+			.addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
 			.authorizeHttpRequests((requests) -> requests
 //				.requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
 //				.requestMatchers("/myBalance").hasAnyAuthority("VIEWBALANCE", "VIEWACCOUNT")
