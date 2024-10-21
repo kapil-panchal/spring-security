@@ -280,3 +280,13 @@ SELECT `authorities`.`id`,
     `authorities`.`customer_id`,
     `authorities`.`name`
 FROM `eazy_bank`.`authorities`;
+
+SELECT `customer`.`customer_id`,
+    `customer`.`name`,
+    `customer`.`email`,
+    `customer`.`mobile_number`,
+    `customer`.`pwd`,
+    `customer`.`role`,
+    `customer`.`create_dt`
+FROM `eazy_bank`.`customer`;
+

@@ -13,19 +13,18 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
-@Data
+@Getter @Setter
 public class Customer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "customer_id")
     private long id;
-
     private String name;
-
     private String email;
 
     @Column(name = "mobile_number")
@@ -33,14 +32,13 @@ public class Customer {
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String pwd;
-
     private String role;
 
     @Column(name = "create_dt")
     @JsonIgnore
     private Date createDt;
-    
-    @OneToMany(mappedBy = "customer", fetch= FetchType.EAGER)
+
+    @OneToMany(mappedBy = "customer", fetch = FetchType.EAGER)
     @JsonIgnore
     private Set<Authority> authorities;
 }

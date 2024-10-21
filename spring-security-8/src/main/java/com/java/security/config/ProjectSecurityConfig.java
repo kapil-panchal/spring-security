@@ -74,7 +74,6 @@ public class ProjectSecurityConfig {
 				.requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
 				.requestMatchers("/myCards").hasAuthority("VIEWCARDS")
 				.requestMatchers("/user").authenticated()
-				
 				.requestMatchers("/contact", "/notices", "/error", "/register", "/invalidSession").permitAll())
 			.formLogin(withDefaults())
 			.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));

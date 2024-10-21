@@ -29,7 +29,7 @@ public class EazyBankUserDetailsService implements UserDetailsService{
 		
 		List<GrantedAuthority> authorities = customer.getAuthorities().stream().map(authority -> new
                 SimpleGrantedAuthority(authority.getName())).collect(Collectors.toList());
-		
+		System.err.println("SIMPLE GRANTED AUTHORITIES: " + authorities);
 		return new User(customer.getEmail(), customer.getPwd(), authorities);
 	}
 }
