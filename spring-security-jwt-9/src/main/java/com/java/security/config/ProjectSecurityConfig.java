@@ -21,6 +21,7 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import com.java.security.constants.ApplicationConstants;
 import com.java.security.exceptions.CustomAccessDeniedHandler;
 import com.java.security.exceptions.CustomBasicAuthenticationEntryPoint;
 import com.java.security.filter.AuthoritiesLoggingAfterFilter;
@@ -36,71 +37,47 @@ import jakarta.servlet.http.HttpServletRequest;
 @Profile(value = "!prod")
 public class ProjectSecurityConfig {
 	
-//	@Autowired
-//	private IpAddressFilter ipAddressFilter;
-
 	@Bean
 	SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
 		
-		CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new
-				CsrfTokenRequestAttributeHandler();
-		
-		http.sessionManagement(sessionConfig -> sessionConfig
-				.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // generates JSESSIONID
-			.cors(corsConfig -> corsConfig.configurationSource(new CorsConfigurationSource() {
-
-			@Override
-			public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
-				CorsConfiguration config = new CorsConfiguration();
-                config.setAllowedOrigins(Collections.singletonList("http://localhost:4200"));
-                config.setAllowedMethods(Collections.singletonList("*"));
-                config.setAllowCredentials(true);
-                config.setAllowedHeaders(Collections.singletonList("*"));
-                config.setExposedHeaders(Arrays.asList("Authorization"));
-                config.setMaxAge(3600L);
-                return config;
-			}
-		}))
-//			.sessionManagement(smc -> smc
-//				.sessionFixation(sfc -> sfc.changeSessionId())
-//				.invalidSessionUrl("/invalidSession")
-//				.maximumSessions(3)
-//				.maxSessionsPreventsLogin(true))
-//			.addFilterBefore(ipAddressFilter, BasicAuthenticationFilter.class)
-			.requiresChannel(rcc -> rcc.anyRequest().requiresInsecure())
-//			.csrf(csrfConfig -> csrfConfig.disable())
-			.csrf(csrfConfig -> csrfConfig
-					.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
-					.ignoringRequestMatchers("/contact","/register")
-					.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
-			.addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
-			.addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
-			.addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
-			.addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class)
-			.addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
-			.addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
-			.authorizeHttpRequests((requests) -> requests
-//				.requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
-//				.requestMatchers("/myBalance").hasAnyAuthority("VIEWBALANCE", "VIEWACCOUNT")
-//				.requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
-//				.requestMatchers("/myCards").hasAuthority("VIEWCARDS")
-				.requestMatchers("/myAccount").hasRole("USER")
-				.requestMatchers("/myBalance").hasAnyRole("USER", "ADMIN")
-				.requestMatchers("/myLoans").hasRole("USER")
-				.requestMatchers("/myCards").hasRole("USER")
-				.requestMatchers("/user").authenticated()
-				.requestMatchers("/contact", "/notices", "/error", "/register", "/invalidSession").permitAll())
-			.formLogin(withDefaults())
-			.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
-//		http.exceptionHandling(ehc -> ehc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
-		http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
-		return http.build();
+		 CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
+	        http.sessionManagement(sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .cors(corsConfig -> corsConfig.configurationSource(new CorsConfigurationSource() {
+                	
+                    @Override
+                    public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+                        CorsConfiguration config = new CorsConfiguration();
+                        config.setAllowedOrigins(Collections.singletonList("http://localhost:4200"));
+                        config.setAllowedMethods(Collections.singletonList("*"));
+                        config.setAllowCredentials(true);
+                        config.setAllowedHeaders(Collections.singletonList("*"));
+                        config.setExposedHeaders(Arrays.asList(ApplicationConstants.JWT_HEADER));
+                        config.setMaxAge(3600L);
+                        return config;
+                    }
+                }))
+                .csrf(csrfConfig -> csrfConfig.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
+                    .ignoringRequestMatchers( "/contact","/register", "/apiLogin")
+                    .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
+                .addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
+                .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure()) // Only HTTP
+                .authorizeHttpRequests((requests) -> requests
+                        .requestMatchers("/myAccount").hasRole("USER")
+                        .requestMatchers("/myBalance").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/myLoans").hasRole("USER")
+                        .requestMatchers("/myCards").hasRole("USER")
+                        .requestMatchers("/user").authenticated()
+                        .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession", "/apiLogin").permitAll());
+	        http.formLogin(withDefaults());
+	        http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
+	        http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
+	        return http.build();
 	}
-	
-//	@Bean
-//	UserDetailsService userDetailsService(DataSource dataSource){
-//		return new JdbcUserDetailsManager(dataSource);
-//	}
 	
 	@Bean
 	PasswordEncoder passwordEncoder() {

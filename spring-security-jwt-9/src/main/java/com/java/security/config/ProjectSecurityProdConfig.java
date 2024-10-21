@@ -21,6 +21,7 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import com.java.security.constants.ApplicationConstants;
 import com.java.security.exceptions.CustomAccessDeniedHandler;
 import com.java.security.exceptions.CustomBasicAuthenticationEntryPoint;
 import com.java.security.filter.AuthoritiesLoggingAfterFilter;
@@ -38,12 +39,12 @@ public class ProjectSecurityProdConfig {
 
 	@Bean
 	SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-		
+
 		CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new
 				CsrfTokenRequestAttributeHandler();
-		
+
 		http.sessionManagement(sessionConfig -> sessionConfig
-				.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+			.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.cors(corsConfig -> corsConfig.configurationSource(new CorsConfigurationSource() {
 
 			@Override
@@ -53,21 +54,16 @@ public class ProjectSecurityProdConfig {
                 config.setAllowedMethods(Collections.singletonList("*"));
                 config.setAllowCredentials(true);
                 config.setAllowedHeaders(Collections.singletonList("*"));
-                config.setExposedHeaders(Arrays.asList("Authorization"));
+                config.setExposedHeaders(Arrays.asList(ApplicationConstants.JWT_HEADER));
                 config.setMaxAge(3600L);
                 return config;
 			}
 		}))
-//			.sessionManagement(smc -> smc
-//				.sessionFixation(sfc -> sfc.changeSessionId())
-//				.invalidSessionUrl("/invalidSession")
-//				.maximumSessions(3)
-//				.maxSessionsPreventsLogin(true))
 			.requiresChannel(rcc -> rcc.anyRequest().requiresInsecure()) // Enforces HTTPS
 			.csrf(csrfConfig -> csrfConfig
-					.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
-					.ignoringRequestMatchers("/contact","/register")
-					.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+				.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
+				.ignoringRequestMatchers("/contact", "/register")
+				.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
 			.addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
 			.addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
 			.addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
@@ -75,10 +71,6 @@ public class ProjectSecurityProdConfig {
 			.addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
 			.addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
 			.authorizeHttpRequests((requests) -> requests
-//				.requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
-//				.requestMatchers("/myBalance").hasAnyAuthority("VIEWBALANCE", "VIEWACCOUNT")
-//				.requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
-//				.requestMatchers("/myCards").hasAuthority("VIEWCARDS")
 				.requestMatchers("/myAccount").hasRole("USER")
 				.requestMatchers("/myBalance").hasAnyRole("USER", "ADMIN")
 				.requestMatchers("/myLoans").hasRole("USER")
@@ -90,17 +82,12 @@ public class ProjectSecurityProdConfig {
 		http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
 		return http.build();
 	}
-	
-//	@Bean
-//	UserDetailsService userDetailsService(DataSource dataSource){
-//		return new JdbcUserDetailsManager(dataSource);
-//	}
-	
+
 	@Bean
 	PasswordEncoder passwordEncoder() {
 		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
 	}
-	
+
 	@Bean
 	CompromisedPasswordChecker compromisedPasswordChecker() {
 		return new HaveIBeenPwnedRestApiPasswordChecker();
