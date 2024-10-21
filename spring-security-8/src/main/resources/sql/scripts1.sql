@@ -161,3 +161,10 @@ CREATE TABLE `contact_messages` (
   `create_dt` date DEFAULT NULL,
   PRIMARY KEY (`contact_id`)
 );
+
+SET SQL_SAFE_UPDATES = 0;
+
+DELETE FROM `authorities`;
+
+INSERT INTO `authorities` (`customer_id`, `name`) VALUES (1, 'ROLE_USER');
+INSERT INTO `authorities` (`customer_id`, `name`) VALUES (1, 'ROLE_ADMIN');
