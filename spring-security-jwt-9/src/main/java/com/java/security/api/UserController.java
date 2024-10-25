@@ -2,21 +2,31 @@ package com.java.security.api;
 
 import java.sql.Date;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import javax.crypto.SecretKey;
+
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.java.security.constants.ApplicationConstants;
 import com.java.security.model.Customer;
 import com.java.security.model.LoginRequestDTO;
 import com.java.security.model.LoginResponseDTO;
 import com.java.security.repository.CustomerRepository;
 
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -25,6 +35,8 @@ public class UserController {
 
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final Environment env;
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody Customer customer) {
@@ -53,9 +65,40 @@ public class UserController {
         return optionalCustomer.orElse(null);
     }
     
+    //Creates Manual Entries for Login without FormLogin or BasicLogin
     @PostMapping(path = "/apiLogin")
     public ResponseEntity<LoginResponseDTO> apiLogin(@RequestBody LoginRequestDTO loginRequest){
+		
+    	String jwt = "";
+    	Authentication authentication = UsernamePasswordAuthenticationToken
+    			.unauthenticated(loginRequest.username(), loginRequest.password());
     	
+    	Authentication authenticationResponse = authenticationManager.authenticate(authentication);
+    	
+    	if(authenticationResponse != null && authenticationResponse.isAuthenticated()) {
+			if(env != null) {
+				String secret = env.getProperty(ApplicationConstants.JWT_SECRET_KEY, ApplicationConstants.JWT_SECRET_DEFAULT_VALUE);
+				SecretKey secretKey = Keys.hmacShaKeyFor(secret.getBytes());
+				jwt = Jwts
+					.builder()
+					.issuer("Eazy Bank")
+					.subject("JWT Token")
+					.claim("username", authenticationResponse.getName())
+					.claim("authorities", authenticationResponse
+											.getAuthorities()
+											.stream()
+											.map(GrantedAuthority::getAuthority)
+											.collect(Collectors.joining(",")))
+					.issuedAt(new java.util.Date())
+					.expiration(new Date(new java.util.Date().getTime() + 30000000))
+					.signWith(secretKey)
+					.compact();
+			}
+    	}
+    	
+    	return ResponseEntity
+    			.status(HttpStatus.OK)
+    			.header(ApplicationConstants.JWT_HEADER, jwt)
+    			.body(new LoginResponseDTO(HttpStatus.OK.getReasonPhrase(), jwt));
     }
-
 }

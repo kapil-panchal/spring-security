@@ -1,5 +1,5 @@
 package com.java.security.model;
 
-public record LoginRequestDTO() {
+public record LoginRequestDTO(String username, String password) {
 
 }
