@@ -65,7 +65,7 @@ public class ProjectSecurityProdConfig {
 			.requiresChannel(rcc -> rcc.anyRequest().requiresInsecure()) // Enforces HTTPS
 			.csrf(csrfConfig -> csrfConfig
 				.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
-				.ignoringRequestMatchers("/contact", "/register")
+				.ignoringRequestMatchers("/contact", "/register", "/apiLogin")
 				.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
 			.addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
 			.addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
@@ -79,7 +79,7 @@ public class ProjectSecurityProdConfig {
 				.requestMatchers("/myLoans").hasRole("USER")
 				.requestMatchers("/myCards").hasRole("USER")
 				.requestMatchers("/user").authenticated()
-				.requestMatchers("/contact", "/notices", "/error", "/register", "/invalidSession").permitAll())
+				.requestMatchers("/contact", "/notices", "/error", "/register", "/invalidSession","/apiLogin").permitAll())
 			.formLogin(withDefaults())
 			.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
 		http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
@@ -99,8 +99,8 @@ public class ProjectSecurityProdConfig {
 	@Bean
 	AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
 		
-		EazyBankUsernamePasswordAuthenticationProvider authenticationProvider = 
-				new EazyBankUsernamePasswordAuthenticationProvider(userDetailsService, passwordEncoder);
+		EazyBankUsernamePasswordProdAuthenticationProvider authenticationProvider = 
+				new EazyBankUsernamePasswordProdAuthenticationProvider(userDetailsService, passwordEncoder);
 		ProviderManager providerManager = new ProviderManager(authenticationProvider);
 		providerManager.setEraseCredentialsAfterAuthentication(false);
 		return providerManager;
