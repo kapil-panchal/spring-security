@@ -31,8 +31,6 @@ export class DashboardService {
     return this.http.get(environment.rooturl + AppConstants.NOTICES_API_URL,{ observe: 'response' });
   }
 
-
-
   saveMessage(contact : Contact){
     let contacts = [];
     contacts.push(contact);

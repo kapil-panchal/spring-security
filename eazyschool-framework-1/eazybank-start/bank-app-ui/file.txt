@@ -1,0 +1,17 @@
+client_id	BnphN90I02EkfySLCoTHcW1T
+client_secret	8iP-oqVcLwqaT02oQU6poACEsUzz2PPlxjKT_pKWMnvZwnX6
+
+https://authorization-server.com/authorize?
+  response_type=code
+  &client_id=BnphN90I02EkfySLCoTHcW1T
+  &redirect_uri=https://www.oauth.com/playground/authorization-code.html
+  &scope=photo+offline_access
+  &state=l7DOzFGn2w3sZ8-j
+
+  //implicit
+  https://authorization-server.com/authorize?
+  response_type=token
+  &client_id=BnphN90I02EkfySLCoTHcW1T
+  &redirect_uri=https://www.oauth.com/playground/implicit.html
+  &scope=photo
+  &state=saT-pS-8FM7H-Y7u
