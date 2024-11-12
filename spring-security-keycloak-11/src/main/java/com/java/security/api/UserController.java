@@ -22,5 +22,4 @@ public class UserController {
         Optional<Customer> optionalCustomer = customerRepository.findByEmail(authentication.getName());
         return optionalCustomer.orElse(null);
     }
-
 }
