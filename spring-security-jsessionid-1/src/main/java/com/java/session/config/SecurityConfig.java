@@ -1,4 +1,4 @@
-package com.java.session;
+package com.java.session.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
