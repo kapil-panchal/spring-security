@@ -11,10 +11,9 @@ public class SecurityConfig {
 
 	@Bean
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-			http.authorizeHttpRequests((request) -> 	request.anyRequest().authenticated()	);
+			http.authorizeHttpRequests((request) -> 	request.requestMatchers("/api/v1/hello").authenticated());
 			http.formLogin(Customizer.withDefaults());
-			http.httpBasic((hbc) -> hbc.disable());
-			
+			http.httpBasic(Customizer.withDefaults());
 			return http.build();
 		}
 }
